@@ -1,15 +1,17 @@
 'use client';
 
-import { TreePine, Droplets, Zap } from 'lucide-react';
+import { TreePine, Droplets, Zap, Truck, Factory } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
 interface CarbonMeterProps {
   totalCarbon: number;
   itemCount: number;
+  productionCarbon?: number;
+  shippingCarbon?: number;
 }
 
-export default function CarbonMeter({ totalCarbon = 0, itemCount = 0 }: CarbonMeterProps) {
+export default function CarbonMeter({ totalCarbon = 0, itemCount = 0, productionCarbon, shippingCarbon }: CarbonMeterProps) {
   const safeCO2 = totalCarbon ?? 0;
   const safeItems = itemCount ?? 0;
   const fastFashionAvg = safeItems * 10;
@@ -17,6 +19,9 @@ export default function CarbonMeter({ totalCarbon = 0, itemCount = 0 }: CarbonMe
   const savingsPercent = fastFashionAvg > 0 ? Math.round((savings / fastFashionAvg) * 100) : 0;
   const treesEquivalent = safeCO2 / 22;
   const waterSaved = safeItems * 1800;
+
+  const safeProductionCarbon = productionCarbon ?? safeCO2;
+  const safeShippingCarbon = shippingCarbon ?? 0;
 
   return (
     <Card className="border-primary/20">
@@ -29,7 +34,7 @@ export default function CarbonMeter({ totalCarbon = 0, itemCount = 0 }: CarbonMe
       <CardContent className="space-y-4">
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">CO2 estimado</span>
+            <span className="text-muted-foreground">CO2 total estimado</span>
             <span className="font-mono font-semibold text-foreground">{safeCO2?.toFixed?.(1) ?? '0.0'} kg</span>
           </div>
           <Progress value={Math.min(100, (safeCO2 / Math.max(1, fastFashionAvg)) * 100)} className="h-2" />
@@ -37,6 +42,32 @@ export default function CarbonMeter({ totalCarbon = 0, itemCount = 0 }: CarbonMe
             vs. {fastFashionAvg?.toFixed?.(1) ?? '0.0'} kg na moda convencional
           </p>
         </div>
+
+        {/* Breakdown: Production vs Shipping */}
+        {safeItems > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+              <div className="flex items-center gap-2 mb-1">
+                <Factory className="h-4 w-4 text-orange-600" />
+                <span className="text-xs font-medium text-orange-700 dark:text-orange-400">Producao</span>
+              </div>
+              <p className="text-lg font-bold text-orange-700 dark:text-orange-400 font-mono">
+                {safeProductionCarbon.toFixed(1)} kg
+              </p>
+              <p className="text-xs text-orange-600 dark:text-orange-500">CO2 na fabricacao</p>
+            </div>
+            <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-2 mb-1">
+                <Truck className="h-4 w-4 text-purple-600" />
+                <span className="text-xs font-medium text-purple-700 dark:text-purple-400">Frete</span>
+              </div>
+              <p className="text-lg font-bold text-purple-700 dark:text-purple-400 font-mono">
+                {safeShippingCarbon.toFixed(1)} kg
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-500">CO2 no transporte</p>
+            </div>
+          </div>
+        )}
 
         {safeItems > 0 && (
           <div className="grid grid-cols-3 gap-3">

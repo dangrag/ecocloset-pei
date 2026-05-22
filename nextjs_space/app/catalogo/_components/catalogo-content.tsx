@@ -4,16 +4,15 @@ import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, ShoppingCart, Leaf, MapPin, Package, SlidersHorizontal, X } from 'lucide-react';
+import { Search, Filter, ShoppingCart, Leaf, MapPin, Package, SlidersHorizontal, X, Truck, TreePine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getProducts, addToCart } from '@/lib/storage';
+import { getProducts, addToCart, saveProducts, getSuppliers, getSupplierById } from '@/lib/storage';
 import { SEED_PRODUCTS } from '@/lib/seed-data';
-import { saveProducts } from '@/lib/storage';
-import { Product, CATEGORIES, MATERIALS } from '@/lib/types';
+import { Product, Supplier, CATEGORIES, MATERIALS, TRANSPORT_EMISSION_FACTORS } from '@/lib/types';
 import SustainabilityBadge, { LocalSupplierBadge } from '@/components/eco/sustainability-badge';
 import { toast } from 'sonner';
 
@@ -33,6 +32,8 @@ export default function CatalogoContent() {
       prods = SEED_PRODUCTS;
     }
     setProducts(prods ?? []);
+    // initialize suppliers in localStorage
+    getSuppliers();
   }, []);
 
   const filtered = useMemo(() => {
@@ -246,10 +247,37 @@ export default function CatalogoContent() {
                     <MapPin className="h-3 w-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{product?.supplier ?? ''} - {product?.supplierCity ?? ''}</span>
                   </div>
+                  {(() => {
+                    const sup = getSupplierById(product?.supplierId ?? '');
+                    return sup ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <Truck className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {sup.distanceKm} km | {TRANSPORT_EMISSION_FACTORS[sup.transportType]?.icon ?? ''} {TRANSPORT_EMISSION_FACTORS[sup.transportType]?.label ?? sup.transportType}
+                        </span>
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex items-center gap-2 mt-1">
                     <Leaf className="h-3 w-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{MATERIALS?.[product?.material ?? '']?.label ?? product?.material ?? ''}</span>
                   </div>
+                  {(product?.shippingCarbon ?? 0) > 0 && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <TreePine className="h-3 w-3 text-emerald-600" />
+                      <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                        Frete: {(product?.shippingCarbon ?? 0).toFixed(1)} kg CO2
+                      </span>
+                    </div>
+                  )}
+                  {(product?.shippingCarbon ?? 0) === 0 && product?.isLocal && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <TreePine className="h-3 w-3 text-emerald-600" />
+                      <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                        Frete carbono zero!
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 mt-1">
                     <Package className="h-3 w-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Tamanho: {product?.size ?? '-'} | Estoque: {product?.quantity ?? 0}</span>

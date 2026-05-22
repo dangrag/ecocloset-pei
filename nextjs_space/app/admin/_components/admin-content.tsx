@@ -18,9 +18,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getProducts, saveProducts, addProduct, updateProduct, deleteProduct } from '@/lib/storage';
+import { getProducts, saveProducts, addProduct, updateProduct, deleteProduct, getSuppliers } from '@/lib/storage';
 import { SEED_PRODUCTS } from '@/lib/seed-data';
-import { Product, MATERIALS, CATEGORIES, SIZES } from '@/lib/types';
+import { Product, Supplier, MATERIALS, CATEGORIES, SIZES, SEED_SUPPLIERS, TRANSPORT_EMISSION_FACTORS, calculateShippingCarbon } from '@/lib/types';
 import SustainabilityBadge, { LocalSupplierBadge } from '@/components/eco/sustainability-badge';
 import { toast } from 'sonner';
 
@@ -34,10 +34,12 @@ const emptyProduct: Product = {
   price: 0,
   supplier: '',
   supplierCity: '',
+  supplierId: '',
   isLocal: false,
   material: 'algodao-organico',
   sustainabilityScore: 9,
   carbonFootprint: 2.1,
+  shippingCarbon: 0,
   category: 'Camiseta',
 };
 
@@ -48,6 +50,7 @@ export default function AdminContent() {
   const [editingProduct, setEditingProduct] = useState<Product>({ ...emptyProduct });
   const [deletingId, setDeletingId] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   const loadProducts = useCallback(() => {
     let prods = getProducts();
@@ -60,6 +63,8 @@ export default function AdminContent() {
 
   useEffect(() => {
     loadProducts();
+    const sups = getSuppliers();
+    setSuppliers(sups?.length > 0 ? sups : SEED_SUPPLIERS);
   }, [loadProducts]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -369,31 +374,53 @@ export default function AdminContent() {
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Fornecedor</Label>
-                <Input
-                  value={editingProduct?.supplier ?? ''}
-                  onChange={(e: any) => setEditingProduct((prev: Product) => ({ ...(prev ?? emptyProduct), supplier: e?.target?.value ?? '' }))}
-                  placeholder="Nome do fornecedor"
-                />
-              </div>
-              <div>
-                <Label>Cidade do Fornecedor</Label>
-                <Input
-                  value={editingProduct?.supplierCity ?? ''}
-                  onChange={(e: any) => setEditingProduct((prev: Product) => ({ ...(prev ?? emptyProduct), supplierCity: e?.target?.value ?? '' }))}
-                  placeholder="Ex: Sao Paulo"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={editingProduct?.isLocal ?? false}
-                onCheckedChange={(v: boolean) => setEditingProduct((prev: Product) => ({ ...(prev ?? emptyProduct), isLocal: v }))}
-              />
-              <Label>Fornecedor Local (selo de prioridade)</Label>
+            <div>
+              <Label>Fornecedor</Label>
+              <Select
+                value={editingProduct?.supplierId ?? ''}
+                onValueChange={(v: string) => {
+                  const sup = suppliers.find((s: Supplier) => s.id === v);
+                  if (sup) {
+                    setEditingProduct((prev: Product) => ({
+                      ...(prev ?? emptyProduct),
+                      supplierId: sup.id,
+                      supplier: sup.name,
+                      supplierCity: sup.city,
+                      isLocal: sup.isLocal,
+                      shippingCarbon: calculateShippingCarbon(sup.distanceKm, sup.transportType),
+                    }));
+                  }
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione um fornecedor" /></SelectTrigger>
+                <SelectContent>
+                  {suppliers.map((s: Supplier) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.isLocal ? '📍 ' : ''}{s.name} - {s.city}/{s.state} ({s.distanceKm} km)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editingProduct?.supplierId && (() => {
+                const sup = suppliers.find((s: Supplier) => s.id === editingProduct.supplierId);
+                return sup ? (
+                  <div className="mt-2 p-3 rounded-lg bg-muted/50 text-sm space-y-1">
+                    <p className="text-foreground font-medium">{sup.name}</p>
+                    <p className="text-muted-foreground">{sup.address}</p>
+                    <p className="text-muted-foreground">{sup.city}/{sup.state} - CEP: {sup.cep}</p>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-xs">{TRANSPORT_EMISSION_FACTORS[sup.transportType]?.icon} {TRANSPORT_EMISSION_FACTORS[sup.transportType]?.label}</span>
+                      <span className="text-xs font-mono">{sup.distanceKm} km</span>
+                      {sup.isLocal && <LocalSupplierBadge size="sm" />}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {sup.certifications.map((cert: string) => (
+                        <Badge key={cert} variant="outline" className="text-xs">{cert}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
             </div>
 
             <div>

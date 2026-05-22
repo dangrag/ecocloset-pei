@@ -11,8 +11,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { getCart, saveCart, removeFromCart, clearCart, calculateTotalCarbon } from '@/lib/storage';
-import { CartItem, MATERIALS } from '@/lib/types';
+import { getCart, saveCart, removeFromCart, clearCart, calculateTotalCarbon, calculateProductionCarbon, calculateShippingCarbonTotal } from '@/lib/storage';
+import { CartItem, MATERIALS, TRANSPORT_EMISSION_FACTORS } from '@/lib/types';
 import CarbonMeter from '@/components/eco/carbon-meter';
 import SustainabilityBadge from '@/components/eco/sustainability-badge';
 import { toast } from 'sonner';
@@ -61,6 +61,8 @@ export default function CarrinhoContent() {
 
   const totalItems = (cart ?? []).reduce((acc: number, item: CartItem) => acc + (item?.quantity ?? 0), 0);
   const totalCarbon = calculateTotalCarbon(cart);
+  const prodCarbon = calculateProductionCarbon(cart);
+  const shipCarbon = calculateShippingCarbonTotal(cart);
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-8">
@@ -137,7 +139,8 @@ export default function CarrinhoContent() {
                           <div className="flex items-center gap-2 mt-1">
                             <SustainabilityBadge score={item?.product?.sustainabilityScore ?? 0} size="sm" showLabel={false} />
                             <span className="text-xs text-muted-foreground font-mono">
-                              CO2: {item?.product?.carbonFootprint ?? 0}kg/un
+                              Prod: {item?.product?.carbonFootprint ?? 0}kg
+                              {(item?.product?.shippingCarbon ?? 0) > 0 ? ` + Frete: ${(item?.product?.shippingCarbon ?? 0).toFixed(1)}kg` : ' + Frete: 0kg'}
                             </span>
                           </div>
                           <div className="flex items-center justify-between mt-3">
@@ -192,7 +195,7 @@ export default function CarrinhoContent() {
           {/* Sidebar */}
           <div className="space-y-4">
             {/* Carbon Meter */}
-            <CarbonMeter totalCarbon={totalCarbon} itemCount={totalItems} />
+            <CarbonMeter totalCarbon={totalCarbon} itemCount={totalItems} productionCarbon={prodCarbon} shippingCarbon={shipCarbon} />
 
             {/* Order Summary */}
             <Card>

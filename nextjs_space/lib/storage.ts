@@ -1,4 +1,4 @@
-import { Product, CartItem } from './types';
+import { Product, CartItem, Supplier, SEED_SUPPLIERS } from './types';
 
 const PRODUCTS_KEY = 'ecocloset_products';
 const CART_KEY = 'ecocloset_cart';
@@ -88,6 +88,51 @@ export function getCartCount(): number {
 
 export function calculateTotalCarbon(cart: CartItem[]): number {
   return (cart ?? []).reduce((total: number, item: CartItem) => {
+    const productionCarbon = item?.product?.carbonFootprint ?? 0;
+    const shippingCarbon = item?.product?.shippingCarbon ?? 0;
+    return total + (productionCarbon + shippingCarbon) * (item?.quantity ?? 0);
+  }, 0);
+}
+
+export function calculateProductionCarbon(cart: CartItem[]): number {
+  return (cart ?? []).reduce((total: number, item: CartItem) => {
     return total + (item?.product?.carbonFootprint ?? 0) * (item?.quantity ?? 0);
   }, 0);
+}
+
+export function calculateShippingCarbonTotal(cart: CartItem[]): number {
+  return (cart ?? []).reduce((total: number, item: CartItem) => {
+    return total + (item?.product?.shippingCarbon ?? 0) * (item?.quantity ?? 0);
+  }, 0);
+}
+
+// Supplier management
+const SUPPLIERS_KEY = 'ecocloset_suppliers';
+
+export function getSuppliers(): Supplier[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(SUPPLIERS_KEY);
+    const suppliers = data ? JSON.parse(data) ?? [] : [];
+    if (suppliers.length === 0) {
+      saveSuppliers(SEED_SUPPLIERS);
+      return SEED_SUPPLIERS;
+    }
+    return suppliers;
+  } catch {
+    return [];
+  }
+}
+
+export function saveSuppliers(suppliers: Supplier[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(SUPPLIERS_KEY, JSON.stringify(suppliers ?? []));
+  } catch (e: any) {
+    console.error('Erro ao salvar fornecedores:', e);
+  }
+}
+
+export function getSupplierById(id: string): Supplier | undefined {
+  return getSuppliers().find((s: Supplier) => s?.id === id);
 }

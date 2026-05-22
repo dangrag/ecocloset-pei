@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/', label: 'Inicio' },
   { href: '/catalogo', label: 'Catalogo' },
   { href: '/admin', label: 'Estoque' },
+  { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/provador', label: 'Provador Virtual' },
 ];
 
