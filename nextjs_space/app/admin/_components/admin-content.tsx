@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getProducts, saveProducts, addProduct, updateProduct, deleteProduct, getSuppliers } from '@/lib/storage';
+import { withBasePath } from '@/lib/get-base-path';
 import { SEED_PRODUCTS } from '@/lib/seed-data';
 import { Product, Supplier, MATERIALS, CATEGORIES, SIZES, SEED_SUPPLIERS, TRANSPORT_EMISSION_FACTORS, calculateShippingCarbon } from '@/lib/types';
 import SustainabilityBadge, { LocalSupplierBadge } from '@/components/eco/sustainability-badge';
@@ -220,7 +221,7 @@ export default function AdminContent() {
                       <div className="relative h-12 w-12 rounded-md overflow-hidden bg-muted">
                         {product?.image ? (
                           <Image
-                            src={product.image}
+                            src={withBasePath(product.image)}
                             alt={product?.name ?? 'Produto'}
                             fill
                             className="object-cover"
@@ -327,7 +328,7 @@ export default function AdminContent() {
               <div className="flex items-center gap-4 mt-1">
                 {editingProduct?.image && (
                   <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-muted">
-                    <Image src={editingProduct.image} alt="Preview" fill className="object-cover" sizes="80px" />
+                    <Image src={withBasePath(editingProduct.image)} alt="Preview" fill className="object-cover" sizes="80px" />
                   </div>
                 )}
                 <label className="flex-1 cursor-pointer">

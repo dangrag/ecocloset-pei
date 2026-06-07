@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getProducts } from '@/lib/storage';
+import { withBasePath } from '@/lib/get-base-path';
 import { SEED_PRODUCTS } from '@/lib/seed-data';
 import { saveProducts } from '@/lib/storage';
 import { Product } from '@/lib/types';
@@ -252,7 +253,7 @@ export default function HomeContent() {
                 <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <div className="relative aspect-square bg-muted">
                     <Image
-                      src={product?.image ?? '/products/tshirt.jpg'}
+                      src={withBasePath(product?.image ?? '/products/tshirt.jpg')}
                       alt={product?.name ?? 'Produto'}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"

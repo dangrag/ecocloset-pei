@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { getCart, saveCart, removeFromCart, clearCart, calculateTotalCarbon, calculateProductionCarbon, calculateShippingCarbonTotal } from '@/lib/storage';
+import { withBasePath } from '@/lib/get-base-path';
 import { CartItem, MATERIALS, TRANSPORT_EMISSION_FACTORS } from '@/lib/types';
 import CarbonMeter from '@/components/eco/carbon-meter';
 import SustainabilityBadge from '@/components/eco/sustainability-badge';
@@ -119,7 +120,7 @@ export default function CarrinhoContent() {
                         <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                           {item?.product?.image ? (
                             <Image
-                              src={item.product.image}
+                              src={withBasePath(item.product.image)}
                               alt={item?.product?.name ?? 'Produto'}
                               fill
                               className="object-cover"

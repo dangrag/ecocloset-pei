@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { getProducts, saveProducts } from '@/lib/storage';
+import { withBasePath } from '@/lib/get-base-path';
 import { SEED_PRODUCTS } from '@/lib/seed-data';
 import { Product } from '@/lib/types';
 import SustainabilityBadge from '@/components/eco/sustainability-badge';
@@ -135,7 +136,7 @@ export default function ProvadorContent() {
           link.click();
           toast.success('Imagem salva!');
         };
-        overlayImg.src = selectedProduct.image;
+        overlayImg.src = withBasePath(selectedProduct.image);
       }
     };
     bgImg.src = userImage ?? '';
@@ -217,7 +218,7 @@ export default function ProvadorContent() {
                       >
                         <div className="relative aspect-square">
                           <Image
-                            src={selectedProduct.image}
+                            src={withBasePath(selectedProduct.image)}
                             alt={selectedProduct?.name ?? 'Roupa'}
                             fill
                             className="object-contain drop-shadow-xl pointer-events-none"
@@ -309,7 +310,7 @@ export default function ProvadorContent() {
                       <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
                         {product?.image ? (
                           <Image
-                            src={product.image}
+                            src={withBasePath(product.image)}
                             alt={product?.name ?? 'Produto'}
                             fill
                             className="object-cover"

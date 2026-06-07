@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getProducts, addToCart, saveProducts, getSuppliers, getSupplierById } from '@/lib/storage';
+import { withBasePath } from '@/lib/get-base-path';
 import { SEED_PRODUCTS } from '@/lib/seed-data';
 import { Product, Supplier, CATEGORIES, MATERIALS, TRANSPORT_EMISSION_FACTORS } from '@/lib/types';
 import SustainabilityBadge, { LocalSupplierBadge } from '@/components/eco/sustainability-badge';
@@ -223,7 +224,7 @@ export default function CatalogoContent() {
             <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
               <div className="relative aspect-square bg-muted">
                 <Image
-                  src={product?.image ?? '/products/tshirt.jpg'}
+                  src={withBasePath(product?.image ?? '/products/tshirt.jpg')}
                   alt={product?.name ?? 'Produto'}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
